@@ -88,7 +88,21 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $user = User::find($id);
+
+        if($request->hasFile('photo')){
+            $image_path = public_path('storage/') . $user->file_name;
+
+            if(file_exists($image_path)){
+                @unlink($image_path);
+            }
+
+            $path = $request->photo->store('image','public');
+            $user->file_name = $path;
+            $user->save();
+            return redirect()->route('user.index')->with('status','User Image Updated Successfully.');
+
+        }
     }
 
     /**
