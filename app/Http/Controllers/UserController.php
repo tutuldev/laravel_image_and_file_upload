@@ -55,11 +55,19 @@ class UserController extends Controller
         // $extension= $file->getClientMimeType();
         // $extension= $file->getSize();
 
-        $file = $request->file('photo');
-        $path = $request->photo->store('image','public');
+        // using store method 
+        // $file = $request->file('photo');
+        // $path = $request->photo->store('image','public');
+        // User::create([
+        //     'file_name'=>$path,
 
+        // ]);
+
+        // using move method
+        $file = $request->file('photo');
+        $file->move(public_path('uploads'), $file->getClientOriginalName());  //create this file manualy
         User::create([
-            'file_name'=>$path,
+            'file_name'=>$file->getClientOriginalName(),
 
         ]);
          return redirect()->route('user.index')->with('status','User Image Upload Successfully.');
