@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -11,7 +12,9 @@ class UserController extends Controller
      */
     public function index()
     {
-        return view('file-upload');
+        $users = User::get();
+
+        return view('file-upload',compact('users'));
 
     }
 
@@ -27,15 +30,39 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $file = $request->file('photo');
-        // dd($file);
+        // $file = $request->file('photo');
+        // // dd($file);
+        // $request->validate([
+        //     // 'photo'=> 'required|mimes:png,jpg,jpeg|max:3000|dimensions:min_width:100,min_height:100,max_width:1000,max_height:1000'
+        //       'photo'=> 'required|mimes:png,jpg,jpeg|max:3000'
+        // ]);
+        // // $path = $request->file('photo')->store('image','public');
+        // // $path = $request->photo->store('image','local');
+
+        // // $fileName =$file->getClientOriginalName();
+        // $fileName =time().'_'.$file->getClientOriginalName();
+        // $path = $request->photo->storeAs('image',$fileName,'public');
+
+        // return redirect()->route('user.index')->with('status','User Image Upload Successfully.');
+
         $request->validate([
-            // 'photo'=> 'required|mimes:png,jpg,jpeg|max:3000|dimensions:min_width:100,min_height:100,max_width:1000,max_height:1000'
               'photo'=> 'required|mimes:png,jpg,jpeg|max:3000'
         ]);
-        // $path = $request->file('photo')->store('image','public');
-        $path = $request->photo->store('image','local');
-        return redirect()->route('user.index')->with('status','User Image Upload Successfully.');
+        // $file = $request->file('photo');
+        // $extension= $file->getClientOriginalExtension();
+        // $extension= $file->extension();
+        // $extension= $file->hashName();
+        // $extension= $file->getClientMimeType();
+        // $extension= $file->getSize();
+
+        $file = $request->file('photo');
+        $path = $request->photo->store('image','public');
+
+        User::create([
+            'file_name'=>$path,
+
+        ]);
+         return redirect()->route('user.index')->with('status','User Image Upload Successfully.');
     }
 
     /**
@@ -51,7 +78,9 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $user = User::find($id);
+
+        return view('file-update',compact('user'));
     }
 
     /**
@@ -67,6 +96,13 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $user= User::find($id);
+        $user->delete();
+        $image_path = public_path('storage/'). $user->file_name;
+        // return $image_path;
+        if(file_exists($image_path)){
+            @unlink($image_path);
+        }
+         return redirect()->route('user.index')->with('status','User Image Delete Successfully.');
     }
 }
